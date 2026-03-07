@@ -3,24 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Card Games Mini App</title>
+  <title>Card Games</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
   <style>
-    :root {
-      --bg: #0d1117;
-      --text: #e6edf3;
-      --card-bg: #161b22;
-      --green: #238636;
-      --red: #da3633;
-      --blue: #388bfd;
-      --gray: #8b949e;
-      --gold: #ffd700;
-    }
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      background: #111;
+      color: #fff;
       height: 100vh;
       display: flex;
       flex-direction: column;
@@ -28,51 +18,46 @@
     }
     header {
       padding: 12px;
-      background: rgba(0,0,0,0.5);
+      background: #1a1a1a;
       text-align: center;
-      font-size: 1.3rem;
-      border-bottom: 1px solid #30363d;
+      font-size: 1.4rem;
     }
     nav {
       display: flex;
-      background: rgba(0,0,0,0.6);
+      background: #222;
       padding: 8px;
       gap: 8px;
       justify-content: center;
     }
     nav button {
       padding: 10px 20px;
+      background: #333;
+      color: white;
       border: none;
       border-radius: 8px;
-      font-size: 1rem;
       cursor: pointer;
-      transition: all 0.2s;
     }
     nav button.active {
-      background: var(--blue);
-      color: white;
-    }
-    nav button:hover {
-      background: #444;
+      background: #0066cc;
     }
     .content {
       flex: 1;
       padding: 16px;
       overflow-y: auto;
     }
-    .game-section {
+    .game {
       display: none;
     }
-    .game-section.active {
+    .game.active {
       display: block;
     }
-    .pot, .chips, .message {
+    .pot, .chips, .info {
       text-align: center;
-      font-size: 1.3rem;
       margin: 12px 0;
-      color: var(--gold);
+      font-size: 1.2rem;
+      color: #ffcc00;
     }
-    .hand, .community {
+    .hand {
       display: flex;
       gap: 8px;
       justify-content: center;
@@ -85,267 +70,231 @@
       color: black;
       border-radius: 8px;
       display: flex;
-      flex-direction: column;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       font-size: 1.8rem;
       font-weight: bold;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.6);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.7);
     }
-    .card.red { color: #c62828; }
-    .card.black { color: #212121; }
+    .card.red { color: #d32f2f; }
     .actions {
       display: flex;
       gap: 12px;
       justify-content: center;
       flex-wrap: wrap;
       padding: 16px;
-      background: rgba(0,0,0,0.4);
+      background: #1a1a1a;
     }
     button.action {
       padding: 12px 24px;
       font-size: 1rem;
       border: none;
-      border-radius: 10px;
+      border-radius: 8px;
       color: white;
       cursor: pointer;
     }
-    .fold  { background: var(--red); }
-    .check { background: var(--gray); }
-    .bet   { background: var(--green); }
+    .fold  { background: #c62828; }
+    .check { background: #757575; }
+    .bet   { background: #388e3c; }
+    .raise { background: #1976d2; }
     .hit   { background: #4caf50; }
-    .stand { background: #f44336; }
-    .new-game { background: var(--blue); margin-top: 20px; }
+    .stand { background: #d32f2f; }
+    .new-game { background: #0288d1; margin-top: 20px; }
+    .message {
+      text-align: center;
+      font-size: 1.2rem;
+      margin: 16px 0;
+      min-height: 24px;
+    }
   </style>
 </head>
 <body>
 
-<header>Card Games • Poker & Blackjack</header>
+<header>Card Games Mini App</header>
 
 <nav>
-  <button onclick="showGame('poker')" class="active">Poker</button>
-  <button onclick="showGame('blackjack')">Blackjack</button>
+  <button data-game="poker" class="active">Poker</button>
+  <button data-game="blackjack">Blackjack</button>
 </nav>
 
 <div class="content">
 
-  <!-- Poker section -->
-  <div id="poker" class="game-section active">
-    <div class="pot">Пот: 420 чипов</div>
-    <div class="community" id="poker-community"></div>
-    <div class="hand" id="poker-player-hand"></div>
-    <div class="message" id="poker-message">Раунд: Префлоп • Твой ход</div>
+  <!-- Poker -->
+  <div id="poker" class="game active">
+    <div class="pot">Пот: 420</div>
+    <div class="hand" id="poker-community">Общие карты</div>
+    <div class="hand" id="poker-hand">Твои карты</div>
+    <div class="message" id="poker-msg">Раунд: Префлоп</div>
     <div class="actions">
-      <button class="action fold"  onclick="pokerAction('fold')">Fold</button>
-      <button class="action check" onclick="pokerAction('check')">Check / Call</button>
-      <button class="action bet"   onclick="pokerAction('bet')">Bet 100</button>
-      <button class="action raise" onclick="pokerAction('raise')">Raise 300</button>
+      <button class="action fold"  data-action="fold">Fold</button>
+      <button class="action check" data-action="check">Check/Call</button>
+      <button class="action bet"   data-action="bet">Bet 100</button>
+      <button class="action raise" data-action="raise">Raise 300</button>
     </div>
   </div>
 
-  <!-- Blackjack section -->
-  <div id="blackjack" class="game-section">
-    <div class="chips" id="bj-chips">Твои чипы: 1000</div>
-
-    <div class="bet-section" id="bj-bet-section">
-      <input type="number" id="bj-bet-input" min="10" max="500" value="100" style="width:80px; text-align:center;">
-      <button class="action bet" onclick="bjPlaceBet()">Поставить</button>
+  <!-- Blackjack -->
+  <div id="blackjack" class="game">
+    <div class="chips" id="bj-chips">Чипы: 1000</div>
+    <div id="bj-bet-area">
+      <input type="number" id="bj-bet" value="100" min="10" max="500" style="width:80px; text-align:center;">
+      <button class="action bet" id="bj-place-bet">Поставить</button>
     </div>
-
-    <div class="hand" id="bj-dealer-hand"><div class="message">Карты дилера</div></div>
-    <div class="hand" id="bj-player-hand"><div class="message">Твои карты</div></div>
-    <div class="message" id="bj-message"></div>
-
-    <div class="actions" id="bj-actions" style="display:none;">
-      <button class="action hit"  onclick="bjHit()">Хит</button>
-      <button class="action stand" onclick="bjStand()">Стенд</button>
+    <div class="hand" id="bj-dealer">Дилер</div>
+    <div class="hand" id="bj-player">Игрок</div>
+    <div class="message" id="bj-msg"></div>
+    <div class="actions" id="bj-game-actions" style="display:none;">
+      <button class="action hit"  id="bj-hit">Hit</button>
+      <button class="action stand" id="bj-stand">Stand</button>
     </div>
-    <button class="action new-game" id="bj-new-game" style="display:none;" onclick="bjNewGame()">Новая игра</button>
+    <button class="action new-game" id="bj-new" style="display:none;">Новая игра</button>
   </div>
 
 </div>
 
 <script>
-  const tg = window.Telegram.WebApp;
-  tg.ready();
-  tg.expand();
+  // Telegram WebApp
+  const tg = window.Telegram.WebApp || {};
+  tg.ready?.();
+  tg.expand?.();
 
-  // Навигация между играми
-  function showGame(game) {
-    document.querySelectorAll('.game-section').forEach(el => el.classList.remove('active'));
-    document.getElementById(game).classList.add('active');
+  console.log("Telegram WebApp loaded:", !!tg.initDataUnsafe);
 
-    document.querySelectorAll('nav button').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-  }
+  // Навигация
+  document.querySelectorAll('nav button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const game = btn.dataset.game;
+      document.querySelectorAll('.game').forEach(g => g.classList.remove('active'));
+      document.getElementById(game).classList.add('active');
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      console.log(`Переключено на игру: ${game}`);
+    });
+  });
 
-  // ────────────────────────────────────────────────
-  // Poker logic (упрощённая, как раньше)
-  // ────────────────────────────────────────────────
-  function pokerAction(type) {
-    let msg = '';
-    switch(type) {
-      case 'fold':  msg = 'Ты сбросил карты'; break;
-      case 'check': msg = 'Check / Call'; break;
-      case 'bet':   msg = 'Bet 100 чипов'; break;
-      case 'raise': msg = 'Raise до 300!'; break;
-    }
-    alert(msg + ' (в полной версии — серверная логика)');
-    document.getElementById('poker-message').textContent = msg;
-  }
-
-  // Простые тестовые карты для покера
-  const suits = ['♥','♦','♣','♠'];
-  const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-  function randomCard() {
-    const r = ranks[Math.floor(Math.random()*ranks.length)];
-    const s = suits[Math.floor(Math.random()*suits.length)];
-    return {rank:r, suit:s, color:(s==='♥'||s==='♦')?'red':'black'};
-  }
-
-  function renderCard(c) {
-    return `<div class="card ${c.color}">${c.rank}<br>${c.suit}</div>`;
-  }
-
-  // Инициализация покера (при первом показе)
+  // ───── Poker ─────
   function initPoker() {
-    const comm = Array(5).fill().map(randomCard);
-    document.getElementById('poker-community').innerHTML = comm.map(renderCard).join('');
-    const hand = Array(2).fill().map(randomCard);
-    document.getElementById('poker-player-hand').innerHTML = hand.map(renderCard).join('');
+    const suits = ['♥','♦','♣','♠'];
+    const ranks = ['A','K','Q','J','10','9','8','7','6','5','4','3','2'];
+    const cards = [];
+    for (let s of suits) for (let r of ranks) cards.push({r, s, color: (s==='♥'||s==='♦')?'red':''});
+    cards.sort(() => Math.random() - 0.5);
+
+    const comm = cards.slice(0,5).map(c => `<div class="card ${c.color}">${c.r}${c.s}</div>`).join('');
+    const hand = cards.slice(5,7).map(c => `<div class="card ${c.color}">${c.r}${c.s}</div>`).join('');
+
+    document.getElementById('poker-community').innerHTML = comm;
+    document.getElementById('poker-hand').innerHTML = hand;
   }
-  initPoker(); // запуск при загрузке
+  initPoker();
 
-  // ────────────────────────────────────────────────
-  // Blackjack logic (полная, как в предыдущем сообщении)
-  // ────────────────────────────────────────────────
-  let bjDeck = [], bjPlayer = [], bjDealer = [], bjChips = 1000, bjBet = 0, bjGameOver = true;
+  document.querySelectorAll('#poker .action').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const action = btn.dataset.action;
+      console.log(`Poker action: ${action}`);
+      document.getElementById('poker-msg').textContent = `Выбрано: ${action}`;
+      alert(`Poker: ${action} (серверная логика пока не подключена)`);
+    });
+  });
 
-  function bjCreateDeck() {
+  // ───── Blackjack ─────
+  let bjChips = 1000;
+  let bjBet = 0;
+  let bjPlayer = [];
+  let bjDealer = [];
+  let bjDeck = [];
+
+  function bjNewDeck() {
+    const suits = ['♥','♦','♣','♠'];
+    const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
     bjDeck = [];
-    suits.forEach(s => ranks.forEach(r => bjDeck.push({rank:r, suit:s})));
+    suits.forEach(s => ranks.forEach(r => bjDeck.push({r, s})));
     bjDeck.sort(() => Math.random() - 0.5);
   }
 
-  function bjGetValue(card) {
-    if (['J','Q','K'].includes(card.rank)) return 10;
-    if (card.rank === 'A') return 11;
-    return parseInt(card.rank);
-  }
-
-  function bjHandValue(hand) {
+  function bjValue(hand) {
     let v = 0, aces = 0;
-    hand.forEach(c => { v += bjGetValue(c); if (c.rank==='A') aces++; });
+    hand.forEach(c => {
+      v += ['J','Q','K'].includes(c.r) ? 10 : (c.r === 'A' ? 11 : +c.r);
+      if (c.r === 'A') aces++;
+    });
     while (v > 21 && aces--) v -= 10;
     return v;
   }
 
-  function bjRenderHand(hand, elId, hideFirst=false) {
-    const el = document.getElementById(elId);
-    el.innerHTML = '';
-    hand.forEach((c,i) => {
-      const color = (c.suit==='♥'||c.suit==='♦') ? 'red' : '';
-      const div = document.createElement('div');
-      div.className = `card ${color}`;
-      div.textContent = hideFirst && i===0 ? '?' : `${c.rank}${c.suit}`;
-      el.appendChild(div);
-    });
+  function bjRender(hand, id) {
+    const el = document.getElementById(id);
+    el.innerHTML = hand.map(c => {
+      const color = (c.s === '♥' || c.s === '♦') ? 'red' : '';
+      return `<div class="card ${color}">${c.r}${c.s}</div>`;
+    }).join('');
   }
 
-  function bjPlaceBet() {
-    bjBet = parseInt(document.getElementById('bj-bet-input').value);
-    if (bjBet < 10 || bjBet > bjChips) return alert('Неверная ставка');
+  function bjStart() {
+    bjBet = +document.getElementById('bj-bet').value;
+    if (bjBet < 10 || bjBet > bjChips) return alert('Ставка от 10 до ' + bjChips);
     bjChips -= bjBet;
-    document.getElementById('bj-chips').textContent = `Твои чипы: ${bjChips}`;
+    document.getElementById('bj-chips').textContent = `Чипы: ${bjChips}`;
 
-    bjCreateDeck();
+    bjNewDeck();
     bjPlayer = [bjDeck.pop(), bjDeck.pop()];
     bjDealer = [bjDeck.pop(), bjDeck.pop()];
 
-    bjRenderHand(bjPlayer, 'bj-player-hand');
-    bjRenderHand(bjDealer, 'bj-dealer-hand', true);
+    bjRender(bjPlayer, 'bj-player');
+    bjRender([bjDealer[0], {r:'?',s:''}], 'bj-dealer'); // скрываем вторую
 
-    document.getElementById('bj-bet-section').style.display = 'none';
-    document.getElementById('bj-actions').style.display = 'flex';
-    bjGameOver = false;
-
-    if (bjHandValue(bjPlayer) === 21) bjEnd('Блэкджек! Выигрыш ×2.5');
+    document.getElementById('bj-bet-area').style.display = 'none';
+    document.getElementById('bj-game-actions').style.display = 'flex';
+    document.getElementById('bj-msg').textContent = 'Твой ход';
   }
 
   function bjHit() {
     bjPlayer.push(bjDeck.pop());
-    bjRenderHand(bjPlayer, 'bj-player-hand');
-    if (bjHandValue(bjPlayer) > 21) bjEnd('Перебор! Проигрыш.');
+    bjRender(bjPlayer, 'bj-player');
+    if (bjValue(bjPlayer) > 21) bjFinish('Перебор! Проигрыш');
   }
 
   function bjStand() {
-    bjRenderHand(bjDealer, 'bj-dealer-hand');
-    while (bjHandValue(bjDealer) < 17) {
+    bjRender(bjDealer, 'bj-dealer');
+    let dv = bjValue(bjDealer);
+    while (dv < 17) {
       bjDealer.push(bjDeck.pop());
-      bjRenderHand(bjDealer, 'bj-dealer-hand');
+      bjRender(bjDealer, 'bj-dealer');
+      dv = bjValue(bjDealer);
     }
-    const pv = bjHandValue(bjPlayer), dv = bjHandValue(bjDealer);
-    if (dv > 21)             bjEnd('Дилер перебрал! Выигрыш.');
-    else if (pv > dv)        bjEnd('Ты выиграл!');
-    else if (pv < dv)        bjEnd('Дилер выиграл.');
-    else                     bjEnd('Ничья.');
+
+    const pv = bjValue(bjPlayer);
+    let msg = '';
+    if (pv > 21) msg = 'Перебор! Проигрыш';
+    else if (dv > 21) { msg = 'Дилер перебрал! Выигрыш'; bjChips += bjBet * 2; }
+    else if (pv > dv) { msg = 'Выигрыш!'; bjChips += bjBet * 2; }
+    else if (pv < dv) msg = 'Проигрыш';
+    else { msg = 'Ничья'; bjChips += bjBet; }
+
+    bjFinish(msg);
   }
 
-  function bjEnd(msg) {
-  document.getElementById('bj-message').textContent = msg;
-  document.getElementById('bj-actions').style.display = 'none';
-  document.getElementById('bj-new-game').style.display = 'block';
-
-  const playerValue = bjHandValue(bjPlayer);
-  const dealerValue = bjHandValue(bjDealer);
-
-  if (msg.includes('Блэкджек')) {
-    // Блэкджек — ×2.5 (или ×3/2 в некоторых правилах, здесь 2.5)
-    bjChips += Math.floor(bjBet * 2.5);
-  }
-  else if (
-    playerValue > 21 ||
-    (dealerValue <= 21 && dealerValue > playerValue) ||
-    msg.includes('Дилер выиграл')
-  ) {
-    // Проигрыш — ничего не возвращаем
-    // chips уже отняли при ставке
-  }
-  else if (
-    dealerValue > 21 ||
-    playerValue > dealerValue ||
-    msg.includes('Дилер перебрал') ||
-    msg.includes('Ты выиграл')
-  ) {
-    // Обычный выигрыш — ×2
-    bjChips += bjBet * 2;
-  }
-  else if (playerValue === dealerValue || msg.includes('Ничья')) {
-    // Ничья — возвращаем ставку
-    bjChips += bjBet;
+  function bjFinish(msg) {
+    document.getElementById('bj-msg').textContent = msg;
+    document.getElementById('bj-game-actions').style.display = 'none';
+    document.getElementById('bj-new').style.display = 'block';
+    document.getElementById('bj-chips').textContent = `Чипы: ${bjChips}`;
+    console.log(`Blackjack end: ${msg}, chips now: ${bjChips}`);
   }
 
-  document.getElementById('bj-chips').textContent = `Твои чипы: ${bjChips}`;
-  bjGameOver = true;
+  // Слушатели для Blackjack
+  document.getElementById('bj-place-bet')?.addEventListener('click', bjStart);
+  document.getElementById('bj-hit')?.addEventListener('click', bjHit);
+  document.getElementById('bj-stand')?.addEventListener('click', bjStand);
+  document.getElementById('bj-new')?.addEventListener('click', () => {
+    document.getElementById('bj-msg').textContent = '';
+    document.getElementById('bj-new').style.display = 'none';
+    document.getElementById('bj-bet-area').style.display = 'block';
+    document.getElementById('bj-player').innerHTML = 'Игрок';
+    document.getElementById('bj-dealer').innerHTML = 'Дилер';
+  });
 
-  if (bjChips <= 0) {
-    alert('Чипы кончились! Игра окончена.');
-  }
-}
-  }
-
-  function bjNewGame() {
-    document.getElementById('bj-message').textContent = '';
-    document.getElementById('bj-new-game').style.display = 'none';
-    document.getElementById('bj-bet-section').style.display = 'block';
-    document.getElementById('bj-player-hand').innerHTML = '<div class="message">Твои карты</div>';
-    document.getElementById('bj-dealer-hand').innerHTML = '<div class="message">Карты дилера</div>';
-  }
-
-  // Инициализация
-  if (tg.initDataUnsafe.user) {
-    document.querySelector('header').textContent += ` • ${tg.initDataUnsafe.user.first_name}`;
-  }
+  console.log("Mini App loaded. Кнопки должны работать.");
 </script>
 
 </body>
