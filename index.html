@@ -292,13 +292,46 @@
   }
 
   function bjEnd(msg) {
-    document.getElementById('bj-message').textContent = msg;
-    document.getElementById('bj-actions').style.display = 'none';
-    document.getElementById('bj-new-game').style.display = 'block';
-    if (msg.includes('выигрыш')) bjChips += bjBet * (msg.includes('Блэкджек') ? 2.5 : 2);
-    else if (msg.includes('Ничья')) bjChips += bjBet;
-    document.getElementById('bj-chips').textContent = `Твои чипы: ${bjChips}`;
-    bjGameOver = true;
+  document.getElementById('bj-message').textContent = msg;
+  document.getElementById('bj-actions').style.display = 'none';
+  document.getElementById('bj-new-game').style.display = 'block';
+
+  const playerValue = bjHandValue(bjPlayer);
+  const dealerValue = bjHandValue(bjDealer);
+
+  if (msg.includes('Блэкджек')) {
+    // Блэкджек — ×2.5 (или ×3/2 в некоторых правилах, здесь 2.5)
+    bjChips += Math.floor(bjBet * 2.5);
+  }
+  else if (
+    playerValue > 21 ||
+    (dealerValue <= 21 && dealerValue > playerValue) ||
+    msg.includes('Дилер выиграл')
+  ) {
+    // Проигрыш — ничего не возвращаем
+    // chips уже отняли при ставке
+  }
+  else if (
+    dealerValue > 21 ||
+    playerValue > dealerValue ||
+    msg.includes('Дилер перебрал') ||
+    msg.includes('Ты выиграл')
+  ) {
+    // Обычный выигрыш — ×2
+    bjChips += bjBet * 2;
+  }
+  else if (playerValue === dealerValue || msg.includes('Ничья')) {
+    // Ничья — возвращаем ставку
+    bjChips += bjBet;
+  }
+
+  document.getElementById('bj-chips').textContent = `Твои чипы: ${bjChips}`;
+  bjGameOver = true;
+
+  if (bjChips <= 0) {
+    alert('Чипы кончились! Игра окончена.');
+  }
+}
   }
 
   function bjNewGame() {
