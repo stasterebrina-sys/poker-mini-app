@@ -114,6 +114,7 @@
       font-size: 1.1rem;
       margin: 16px 0;
       min-height: 24px;
+      color: var(--text); /* стандартный белый цвет */
     }
     .win { color: var(--win); font-weight: bold; }
     .lose { color: var(--lose); font-weight: bold; }
@@ -184,7 +185,7 @@
   // Lazy load Firebase
   let db = null;
   function loadFirebase() {
-    if (db) return; // уже загружено
+    if (db) return;
 
     console.log("Загружаем Firebase...");
 
@@ -229,7 +230,7 @@
     document.head.appendChild(scriptDB);
   }
 
-  // Запускаем lazy load при первом изменении чипов или через 5 секунд
+  // Запускаем lazy load через 5 секунд
   setTimeout(loadFirebase, 5000);
 
   // Навигация
@@ -294,6 +295,7 @@
     document.getElementById('bj-bet-area').style.display = 'none';
     document.getElementById('bj-actions').style.display = 'flex';
     document.getElementById('bj-msg').textContent = 'Твой ход';
+    document.getElementById('bj-msg').className = 'msg'; // стандартный белый
   });
 
   document.getElementById('bj-hit').addEventListener('click', () => {
@@ -305,6 +307,7 @@
       document.getElementById('bj-actions').style.display = 'none';
       document.getElementById('bj-new').style.display = 'block';
     } else {
+      document.getElementById('bj-msg').className = 'msg'; // стандартный белый
       document.getElementById('bj-msg').textContent = 'Ты взял карту';
     }
   });
@@ -320,34 +323,35 @@
 
     const pv = bjValue(bjPlayer);
     let msg = '';
-    let className = '';
+    let className = 'msg';
     if (pv > 21) {
       msg = 'Перебор! Проигрыш';
-      className = 'lose';
+      className = 'msg lose';
     } else if (dv > 21) {
       msg = 'Дилер перебрал! Выигрыш';
-      className = 'win';
+      className = 'msg win';
       updateChips(bjBet * 2);
     } else if (pv > dv) {
       msg = 'Выигрыш!';
-      className = 'win';
+      className = 'msg win';
       updateChips(bjBet * 2);
     } else if (pv < dv) {
       msg = 'Проигрыш';
-      className = 'lose';
+      className = 'msg lose';
     } else {
       msg = 'Ничья';
-      className = 'tie';
+      className = 'msg tie';
       updateChips(bjBet);
     }
 
-    document.getElementById('bj-msg').className = 'msg ' + className;
+    document.getElementById('bj-msg').className = className;
     document.getElementById('bj-msg').textContent = msg;
     document.getElementById('bj-actions').style.display = 'none';
     document.getElementById('bj-new').style.display = 'block';
   });
 
   document.getElementById('bj-new').addEventListener('click', () => {
+    document.getElementById('bj-msg').className = 'msg';
     document.getElementById('bj-msg').textContent = '';
     document.getElementById('bj-new').style.display = 'none';
     document.getElementById('bj-bet-area').style.display = 'block';
