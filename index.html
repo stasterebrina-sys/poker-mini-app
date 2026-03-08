@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Card Games</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <!-- Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
   <style>
@@ -178,7 +179,7 @@
   firebase.initializeApp(firebaseConfig);
   const db = firebase.database();
 
-  // Чипы
+  // Чипы из Firebase
   let chips = 1000;
   const userId = tg.initDataUnsafe?.user?.id || 'guest';
   db.ref(`users/${userId}/balance`).on('value', snap => {
