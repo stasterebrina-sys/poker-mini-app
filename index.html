@@ -8,31 +8,128 @@
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
   <style>
-    body { margin:0; font-family:Arial,sans-serif; background:#000; color:#fff; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
-    header { padding:10px; background:#111; text-align:center; font-size:1.4rem; }
-    #chips { background:#222; padding:12px; text-align:center; font-size:1.3rem; border-bottom:1px solid #444; }
-    nav { display:flex; background:#111; padding:8px; gap:8px; justify-content:center; }
-    nav button { padding:10px 20px; background:#333; color:white; border:none; border-radius:6px; cursor:pointer; }
-    nav button.active { background:#0066cc; }
-    .tab { display:none; padding:16px; flex:1; overflow-y:auto; }
-    .tab.active { display:block; }
-    .hand { display:flex; gap:8px; justify-content:center; margin:16px 0; flex-wrap:wrap; }
-    .card { width:60px; height:90px; background:#fff; color:#000; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:1.6rem; font-weight:bold; box-shadow:0 4px 8px rgba(0,0,0,0.6); }
-    .card.red { color:#c00; }
-    .actions { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; padding:16px; }
-    button { padding:12px 24px; font-size:1rem; border:none; border-radius:6px; color:white; cursor:pointer; min-width:80px; }
-    .fold { background:#c62828; }
-    .check { background:#757575; }
-    .bet { background:#388e3c; }
-    .raise { background:#1976d2; }
-    .hit { background:#4caf50; }
-    .stand { background:#d32f2f; }
-    .new-game { background:#0288d1; margin-top:20px; }
-    .msg { text-align:center; font-size:1.1rem; margin:16px 0; min-height:24px; }
-    #admin-panel { padding:20px; background:#222; border-radius:8px; margin:20px auto; max-width:400px; }
-    .player-item { margin:10px 0; padding:10px; background:#333; border-radius:6px; display:flex; justify-content:space-between; align-items:center; }
-    .online { color:#4caf50; font-weight:bold; }
-    .offline { color:#757575; }
+    :root {
+      --bg: #000;
+      --card: #fff;
+      --text: #fff;
+      --gray: #444;
+      --red: #c62828;
+      --green: #388e3c;
+      --blue: #1976d2;
+      --gold: #ffcc00;
+    }
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    header, #chips {
+      padding: 12px;
+      background: #111;
+      text-align: center;
+    }
+    #chips {
+      background: #222;
+      border-bottom: 1px solid var(--gray);
+      font-size: 1.3rem;
+    }
+    nav {
+      display: flex;
+      background: #111;
+      padding: 8px;
+      gap: 8px;
+      justify-content: center;
+    }
+    nav button {
+      padding: 10px 20px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+    nav button.active {
+      background: var(--blue);
+    }
+    .tab {
+      display: none;
+      padding: 16px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .tab.active {
+      display: block;
+    }
+    .hand {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+    .card {
+      width: 60px;
+      height: 90px;
+      background: var(--card);
+      color: #000;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.6rem;
+      font-weight: bold;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.6);
+    }
+    .card.red { color: var(--red); }
+    .actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      justify-content: center;
+      padding: 16px;
+    }
+    button {
+      padding: 12px 24px;
+      font-size: 1rem;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      min-width: 80px;
+    }
+    .fold { background: var(--red); }
+    .check { background: #757575; }
+    .bet { background: var(--green); }
+    .raise { background: var(--blue); }
+    .hit { background: var(--green); }
+    .stand { background: var(--red); }
+    .new-game { background: #0288d1; margin-top: 20px; }
+    .msg {
+      text-align: center;
+      font-size: 1.1rem;
+      margin: 16px 0;
+      min-height: 24px;
+    }
+    #admin-panel {
+      padding: 20px;
+      background: #222;
+      border-radius: 8px;
+      margin: 20px auto;
+      max-width: 400px;
+    }
+    .player-item {
+      margin: 10px 0;
+      padding: 10px;
+      background: #333;
+      border-radius: 6px;
+      display: flex;
+      justify-content: space-between;
+    }
+    .online { color: #4caf50; font-weight: bold; }
   </style>
 </head>
 <body>
@@ -97,10 +194,8 @@
   const MY_ADMIN_ID = 1920427639;
   if (tg.initDataUnsafe?.user?.id == MY_ADMIN_ID) {
     document.getElementById('admin-tab').style.display = 'block';
-    console.log("Админ-панель активирована");
   }
 
-  // Firebase (твой config)
   const firebaseConfig = {
     apiKey: "AIzaSyDaFDepdyQdw23ieJilXEfO_oVN0rIhHg",
     authDomain: "tggame-56b27.firebaseapp.com",
@@ -117,16 +212,18 @@
 
   // Чипы
   let chips = 1000;
-  db.ref(`users/${tg.initDataUnsafe?.user?.id || 'guest'}/balance`).on('value', snap => {
+  const userId = tg.initDataUnsafe?.user?.id || 'guest';
+  db.ref(`users/${userId}/balance`).on('value', snap => {
     chips = snap.val() || 1000;
     document.getElementById('chips').textContent = `Чипы: ${chips}`;
   });
 
-  // Обновляем lastActive при каждом действии (можно добавить в кнопки)
+  // Обновляем lastActive
   function updateLastActive() {
-    db.ref(`users/${tg.initDataUnsafe?.user?.id || 'guest'}/lastActive`).set(Date.now());
+    db.ref(`users/${userId}/lastActive`).set(Date.now());
   }
-  setInterval(updateLastActive, 30000); // каждые 30 секунд
+  setInterval(updateLastActive, 30000);
+  updateLastActive();
 
   // Навигация
   document.querySelectorAll('nav button').forEach(btn => {
@@ -244,7 +341,7 @@
     return v;
   }
 
-  // Admin
+  // Admin — список игроков
   function loadPlayers() {
     db.ref('users').on('value', snap => {
       const list = document.getElementById('player-list');
@@ -254,7 +351,7 @@
         const data = child.val();
         const lastActive = data.lastActive || 0;
         const minutesAgo = Math.round((now - lastActive) / 60000);
-        const status = minutesAgo < 5 ? '<span class="online">онлайн</span>' : `<span class="offline">${minutesAgo} мин назад</span>`;
+        const status = minutesAgo < 5 ? '<span style="color:#4caf50;">онлайн</span>' : `<span style="color:#757575;">${minutesAgo} мин назад</span>`;
         const div = document.createElement('div');
         div.className = 'player-item';
         div.innerHTML = `ID ${child.key}: ${data.balance || 0} чипов • ${status}`;
@@ -275,7 +372,7 @@
     }
   });
 
-  console.log("Mini App загружен. Кнопки привязаны.");
+  console.log("Mini App полностью загружен. Кнопки привязаны.");
 </script>
 </body>
 </html>
