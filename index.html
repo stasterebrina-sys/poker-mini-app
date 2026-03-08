@@ -365,6 +365,16 @@
     while (v > 21 && aces--) v -= 10;
     return v;
   }
+// Тестовая запись — выполнится при загрузке страницы
+db.ref(`users/${userId}`).set({
+  balance: 1000,
+  lastActive: Date.now(),
+  test: "ok"
+}).then(() => {
+  console.log("Тестовые данные записаны в Firebase");
+}).catch(error => {
+  console.error("Ошибка записи в Firebase:", error);
+});
 
   console.log("Mini App полностью загружен. Кнопки привязаны.");
 </script>
