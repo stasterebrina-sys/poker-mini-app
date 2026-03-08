@@ -375,6 +375,10 @@ db.ref(`users/${userId}`).set({
 }).catch(error => {
   console.error("Ошибка записи в Firebase:", error);
 });
+document.getElementById('bj-bet-btn').addEventListener('click', () => {
+  console.log("Кнопка 'Поставить' нажата");
+  alert("Кнопка работает!");
+});
 
   console.log("Mini App полностью загружен. Кнопки привязаны.");
 </script>
