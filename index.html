@@ -105,6 +105,19 @@
       margin: 16px 0;
       min-height: 24px;
     }
+    #admin-panel {
+      padding: 20px;
+      background: #222;
+      border-radius: 8px;
+      margin: 20px auto;
+      max-width: 300px;
+    }
+    #admin-panel input {
+      width: 100%;
+      margin: 10px 0;
+      padding: 8px;
+      box-sizing: border-box;
+    }
   </style>
 </head>
 <body>
@@ -116,12 +129,13 @@
 <nav>
   <button data-tab="poker" class="active">Poker</button>
   <button data-tab="blackjack">Blackjack</button>
+  <button data-tab="admin" id="admin-tab" style="display:none;">Admin</button>
 </nav>
 
 <div id="poker" class="tab active">
   <div class="pot">Пот: 420</div>
-  <div class="hand" id="poker-comm">Общие карты</div>
-  <div class="hand" id="poker-hand">Твои карты</div>
+  <div class="hand" id="poker-comm"></div>
+  <div class="hand" id="poker-hand"></div>
   <div class="msg" id="poker-msg">Раунд: Префлоп</div>
   <div class="actions">
     <button class="fold" id="p-fold">Fold</button>
@@ -146,13 +160,29 @@
   <button class="new-game" id="bj-new" style="display:none;">Новая игра</button>
 </div>
 
+<div id="admin" class="tab">
+  <div id="admin-panel">
+    <h3>Админ-панель (только для тебя)</h3>
+    <input type="number" id="admin-sum" placeholder="Сумма (+ добавить, - отнять)" value="0">
+    <button id="admin-change">Применить</button>
+    <div id="admin-status" class="msg"></div>
+  </div>
+</div>
+
 <script>
   const tg = window.Telegram.WebApp;
   tg.ready();
   tg.expand();
 
   console.log("Mini App загружен");
-  console.log("Твой ID:", tg.initDataUnsafe?.user?.id);
+  console.log("Твой ID:", tg.initDataUnsafe?.user?.id || "не определён");
+
+  // Админ-панель только для тебя
+  const MY_ADMIN_ID = 1920427639;
+  if (tg.initDataUnsafe?.user?.id == MY_ADMIN_ID) {
+    document.getElementById('admin-tab').style.display = 'block';
+    console.log("Админ-панель активирована для ID", MY_ADMIN_ID);
+  }
 
   // Чипы
   let chips = parseInt(localStorage.getItem('chips') || '1000');
@@ -173,7 +203,7 @@
     });
   });
 
-  // Poker
+  // Poker — карты
   function initPoker() {
     const suits = ['♥','♦','♣','♠'];
     const ranks = ['A','K','Q','J','10','9','8','7','6','5','4','3','2'];
@@ -234,6 +264,8 @@
       document.getElementById('bj-msg').textContent = 'Перебор! Проигрыш';
       document.getElementById('bj-actions').style.display = 'none';
       document.getElementById('bj-new').style.display = 'block';
+    } else {
+      document.getElementById('bj-msg').textContent = 'Ты взял карту';
     }
   });
 
@@ -263,7 +295,7 @@
     return v;
   }
 
-  console.log("Mini App загружен. Кнопки привязаны.");
+  console.log("Mini App полностью загружен. Кнопки привязаны.");
 </script>
 </body>
 </html>
