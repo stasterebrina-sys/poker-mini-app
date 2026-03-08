@@ -379,6 +379,19 @@ document.getElementById('bj-bet-btn').addEventListener('click', () => {
   console.log("Кнопка 'Поставить' нажата");
   alert("Кнопка работает!");
 });
+db.ref(`users/${userId}/balance`).on('value', snap => {
+  console.log("Баланс получен из Firebase:", snap.val());
+  chips = snap.val() || 1000;
+  document.getElementById('chips').textContent = `Чипы: ${chips}`;
+}, error => {
+  console.error("Ошибка чтения баланса:", error.message);
+});
+
+db.ref(`users/${userId}/balance`).set(chips).then(() => {
+  console.log("Баланс записан в Firebase");
+}).catch(error => {
+  console.error("Ошибка записи:", error.message);
+});
 
   console.log("Mini App полностью загружен. Кнопки привязаны.");
 </script>
