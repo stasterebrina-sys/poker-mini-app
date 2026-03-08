@@ -128,8 +128,10 @@
       border-radius: 6px;
       display: flex;
       justify-content: space-between;
+      align-items: center;
     }
     .online { color: #4caf50; font-weight: bold; }
+    .offline { color: #757575; }
   </style>
 </head>
 <body>
@@ -196,6 +198,7 @@
     document.getElementById('admin-tab').style.display = 'block';
   }
 
+  // Firebase (твой config)
   const firebaseConfig = {
     apiKey: "AIzaSyDaFDepdyQdw23ieJilXEfO_oVN0rIhHg",
     authDomain: "tggame-56b27.firebaseapp.com",
@@ -351,7 +354,7 @@
         const data = child.val();
         const lastActive = data.lastActive || 0;
         const minutesAgo = Math.round((now - lastActive) / 60000);
-        const status = minutesAgo < 5 ? '<span style="color:#4caf50;">онлайн</span>' : `<span style="color:#757575;">${minutesAgo} мин назад</span>`;
+        const status = minutesAgo < 5 ? '<span class="online">онлайн</span>' : `<span class="offline">${minutesAgo} мин назад</span>`;
         const div = document.createElement('div');
         div.className = 'player-item';
         div.innerHTML = `ID ${child.key}: ${data.balance || 0} чипов • ${status}`;
