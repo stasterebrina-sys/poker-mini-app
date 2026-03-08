@@ -3,120 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Card Games</title>
+  <title>Card Games Online</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
   <style>
-    :root {
-      --bg: #000;
-      --card-bg: #fff;
-      --text: #fff;
-      --gray: #444;
-      --red: #c62828;
-      --green: #388e3c;
-      --blue: #1976d2;
-      --gold: #ffcc00;
-    }
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    header, #chips {
-      padding: 12px;
-      background: #111;
-      text-align: center;
-    }
-    #chips {
-      background: #222;
-      border-bottom: 1px solid var(--gray);
-      font-size: 1.3rem;
-    }
-    nav {
-      display: flex;
-      background: #111;
-      padding: 8px;
-      gap: 8px;
-      justify-content: center;
-    }
-    nav button {
-      padding: 10px 20px;
-      background: #333;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    nav button.active {
-      background: var(--blue);
-    }
-    .tab {
-      display: none;
-      padding: 16px;
-      flex: 1;
-      overflow-y: auto;
-    }
-    .tab.active {
-      display: block;
-    }
-    .hand {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin: 16px 0;
-      flex-wrap: wrap;
-    }
-    .card {
-      width: 60px;
-      height: 90px;
-      background: var(--card-bg);
-      color: #000;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.6rem;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.6);
-    }
-    .card.red { color: var(--red); }
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      padding: 16px;
-    }
-    button {
-      padding: 12px 24px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 6px;
-      color: white;
-      cursor: pointer;
-      min-width: 80px;
-    }
-    .fold { background: var(--red); }
-    .check { background: #757575; }
-    .bet { background: var(--green); }
-    .raise { background: var(--blue); }
-    .hit { background: var(--green); }
-    .stand { background: var(--red); }
-    .new-game { background: #0288d1; margin-top: 20px; }
-    .msg {
-      text-align: center;
-      font-size: 1.1rem;
-      margin: 16px 0;
-      min-height: 24px;
-    }
+    body { margin:0; font-family:Arial,sans-serif; background:#000; color:#fff; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+    header { padding:10px; background:#111; text-align:center; font-size:1.4rem; }
+    #chips { background:#222; padding:12px; text-align:center; font-size:1.3rem; border-bottom:1px solid #444; }
+    nav { display:flex; background:#111; padding:8px; gap:8px; justify-content:center; }
+    nav button { padding:10px 20px; background:#333; color:white; border:none; border-radius:6px; cursor:pointer; }
+    nav button.active { background:#0066cc; }
+    .tab { display:none; padding:16px; flex:1; overflow-y:auto; }
+    .tab.active { display:block; }
+    .hand { display:flex; gap:8px; justify-content:center; margin:16px 0; flex-wrap:wrap; }
+    .card { width:60px; height:90px; background:#fff; color:#000; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:1.6rem; font-weight:bold; box-shadow:0 4px 8px rgba(0,0,0,0.6); }
+    .card.red { color:#c00; }
+    .actions { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; padding:16px; }
+    button { padding:12px 24px; font-size:1rem; border:none; border-radius:6px; color:white; cursor:pointer; min-width:80px; }
+    .fold { background:#c62828; }
+    .check { background:#757575; }
+    .bet { background:#388e3c; }
+    .raise { background:#1976d2; }
+    .hit { background:#4caf50; }
+    .stand { background:#d32f2f; }
+    .new-game { background:#0288d1; margin-top:20px; }
+    .msg { text-align:center; font-size:1.1rem; margin:16px 0; min-height:24px; }
+    #admin-panel { padding:20px; background:#222; border-radius:8px; margin:20px auto; max-width:400px; }
+    .player-item { margin:10px 0; padding:10px; background:#333; border-radius:6px; display:flex; justify-content:space-between; align-items:center; }
+    .online { color:#4caf50; font-weight:bold; }
+    .offline { color:#757575; }
   </style>
 </head>
 <body>
 
-<header>Card Games</header>
+<header>Card Games Online</header>
+
 <div id="chips">Чипы: 1000</div>
 
 <nav>
@@ -140,7 +62,7 @@
 
 <div id="blackjack" class="tab">
   <div id="bj-bet-area">
-    <input type="number" id="bj-bet" value="100" min="10" max="500" style="width:80px;text-align:center;margin:10px 0;">
+    <input type="number" id="bj-bet" value="100" min="10" style="width:80px;text-align:center;margin:10px 0;">
     <button class="bet" id="bj-bet-btn">Поставить</button>
   </div>
   <div class="hand" id="bj-dealer"></div>
@@ -155,8 +77,10 @@
 
 <div id="admin" class="tab">
   <div id="admin-panel">
-    <h3>Админ-панель</h3>
-    <input type="number" id="admin-sum" placeholder="Сумма (+ добавить, - отнять)" value="0">
+    <h3>Админ-панель (только для тебя)</h3>
+    <div id="player-list"></div>
+    <input type="text" id="admin-user" placeholder="User ID">
+    <input type="number" id="admin-sum" placeholder="Сумма (+ добавить, - отнять)">
     <button id="admin-change">Применить</button>
     <div id="admin-status" class="msg"></div>
   </div>
@@ -168,21 +92,41 @@
   tg.expand();
 
   console.log("Mini App загружен");
-  console.log("Твой ID:", tg.initDataUnsafe?.user?.id || "не определён");
+  console.log("Твой Telegram ID:", tg.initDataUnsafe?.user?.id);
 
   const MY_ADMIN_ID = 1920427639;
   if (tg.initDataUnsafe?.user?.id == MY_ADMIN_ID) {
     document.getElementById('admin-tab').style.display = 'block';
+    console.log("Админ-панель активирована");
   }
 
+  // Firebase (твой config)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDaFDepdyQdw23ieJilXEfO_oVN0rIhHg",
+    authDomain: "tggame-56b27.firebaseapp.com",
+    databaseURL: "https://tggame-56b27-default-rtdb.firebaseio.com",
+    projectId: "tggame-56b27",
+    storageBucket: "tggame-56b27.appspot.com",
+    messagingSenderId: "937043251707",
+    appId: "1:937043251707:web:aad7b1b9408b6d07d5bb5e",
+    measurementId: "G-Q15Q0MS2L4"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
   // Чипы
-  let chips = parseInt(localStorage.getItem('chips') || '1000');
-  function updateChips(delta = 0) {
-    chips += delta;
-    localStorage.setItem('chips', chips);
+  let chips = 1000;
+  db.ref(`users/${tg.initDataUnsafe?.user?.id || 'guest'}/balance`).on('value', snap => {
+    chips = snap.val() || 1000;
     document.getElementById('chips').textContent = `Чипы: ${chips}`;
+  });
+
+  // Обновляем lastActive при каждом действии (можно добавить в кнопки)
+  function updateLastActive() {
+    db.ref(`users/${tg.initDataUnsafe?.user?.id || 'guest'}/lastActive`).set(Date.now());
   }
-  updateChips();
+  setInterval(updateLastActive, 30000); // каждые 30 секунд
 
   // Навигация
   document.querySelectorAll('nav button').forEach(btn => {
@@ -208,54 +152,40 @@
   }
   initPoker();
 
-  ['fold', 'check', 'bet', 'raise'].forEach(action => {
-    document.getElementById(`p-${action}`).addEventListener('click', () => {
-      document.getElementById('poker-msg').textContent = `${action.charAt(0).toUpperCase() + action.slice(1)} нажат`;
-      alert(action.charAt(0).toUpperCase() + action.slice(1));
-    });
+  document.getElementById('p-fold').addEventListener('click', () => {
+    document.getElementById('poker-msg').textContent = 'Fold нажат';
+    alert('Fold');
+  });
+  document.getElementById('p-check').addEventListener('click', () => {
+    document.getElementById('poker-msg').textContent = 'Check/Call нажат';
+    alert('Check/Call');
+  });
+  document.getElementById('p-bet').addEventListener('click', () => {
+    document.getElementById('poker-msg').textContent = 'Bet 100 нажат';
+    alert('Bet 100');
+  });
+  document.getElementById('p-raise').addEventListener('click', () => {
+    document.getElementById('poker-msg').textContent = 'Raise 300 нажат';
+    alert('Raise 300');
   });
 
   // Blackjack
   let bjDeck = [], bjPlayer = [], bjDealer = [], bjBet = 0;
-
-  const suits = ['♥','♦','♣','♠'];
-  const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-
-  function createDeck() {
-    const deck = [];
-    suits.forEach(s => ranks.forEach(r => deck.push({r, s})));
-    deck.sort(() => Math.random() - 0.5);
-    return deck;
-  }
-
-  function renderHand(hand, elId) {
-    document.getElementById(elId).innerHTML = hand.map(c => {
-      const color = (c.s === '♥' || c.s === '♦') ? 'red' : '';
-      return `<div class="card ${color}">${c.r}${c.s}</div>`;
-    }).join('');
-  }
-
-  function getValue(hand) {
-    let v = 0, aces = 0;
-    hand.forEach(c => {
-      v += ['J','Q','K'].includes(c.r) ? 10 : (c.r === 'A' ? 11 : +c.r);
-      if (c.r === 'A') aces++;
-    });
-    while (v > 21 && aces--) v -= 10;
-    return v;
-  }
 
   document.getElementById('bj-bet-btn').addEventListener('click', () => {
     bjBet = parseInt(document.getElementById('bj-bet').value);
     if (bjBet < 10 || bjBet > chips) return alert('Неверная ставка');
     updateChips(-bjBet);
 
-    bjDeck = createDeck();
+    bjDeck = [];
+    ['♥','♦','♣','♠'].forEach(s => ['2','3','4','5','6','7','8','9','10','J','Q','K','A'].forEach(r => bjDeck.push({r,s})));
+    bjDeck.sort(() => Math.random() - 0.5);
+
     bjPlayer = [bjDeck.pop(), bjDeck.pop()];
     bjDealer = [bjDeck.pop(), bjDeck.pop()];
 
-    renderHand(bjPlayer, 'bj-player');
-    renderHand([bjDealer[0], {r:'?',s:''}], 'bj-dealer');
+    document.getElementById('bj-player').innerHTML = bjPlayer.map(c => `<div class="card ${c.s==='♥'||c.s==='♦'?'red':''}">${c.r}${c.s}</div>`).join('');
+    document.getElementById('bj-dealer').innerHTML = `<div class="card">?</div><div class="card ${bjDealer[1].s==='♥'||bjDealer[1].s==='♦'?'red':''}">${bjDealer[1].r}${bjDealer[1].s}</div>`;
 
     document.getElementById('bj-bet-area').style.display = 'none';
     document.getElementById('bj-actions').style.display = 'flex';
@@ -264,24 +194,26 @@
 
   document.getElementById('bj-hit').addEventListener('click', () => {
     bjPlayer.push(bjDeck.pop());
-    renderHand(bjPlayer, 'bj-player');
-    if (getValue(bjPlayer) > 21) {
+    document.getElementById('bj-player').innerHTML = bjPlayer.map(c => `<div class="card ${c.s==='♥'||c.s==='♦'?'red':''}">${c.r}${c.s}</div>`).join('');
+    if (bjValue(bjPlayer) > 21) {
       document.getElementById('bj-msg').textContent = 'Перебор! Проигрыш';
       document.getElementById('bj-actions').style.display = 'none';
       document.getElementById('bj-new').style.display = 'block';
+    } else {
+      document.getElementById('bj-msg').textContent = 'Ты взял карту';
     }
   });
 
   document.getElementById('bj-stand').addEventListener('click', () => {
-    renderHand(bjDealer, 'bj-dealer');
-    let dv = getValue(bjDealer);
+    document.getElementById('bj-dealer').innerHTML = bjDealer.map(c => `<div class="card ${c.s==='♥'||c.s==='♦'?'red':''}">${c.r}${c.s}</div>`).join('');
+    let dv = bjValue(bjDealer);
     while (dv < 17) {
       bjDealer.push(bjDeck.pop());
-      renderHand(bjDealer, 'bj-dealer');
-      dv = getValue(bjDealer);
+      document.getElementById('bj-dealer').innerHTML = bjDealer.map(c => `<div class="card ${c.s==='♥'||c.s==='♦'?'red':''}">${c.r}${c.s}</div>`).join('');
+      dv = bjValue(bjDealer);
     }
 
-    const pv = getValue(bjPlayer);
+    const pv = bjValue(bjPlayer);
     let msg = '';
     if (pv > 21) msg = 'Перебор! Проигрыш';
     else if (dv > 21) { msg = 'Дилер перебрал! Выигрыш'; updateChips(bjBet * 2); }
@@ -302,18 +234,48 @@
     document.getElementById('bj-dealer').innerHTML = '';
   });
 
+  function bjValue(hand) {
+    let v = 0, aces = 0;
+    hand.forEach(c => {
+      v += ['J','Q','K'].includes(c.r) ? 10 : (c.r === 'A' ? 11 : +c.r);
+      if (c.r === 'A') aces++;
+    });
+    while (v > 21 && aces--) v -= 10;
+    return v;
+  }
+
   // Admin
+  function loadPlayers() {
+    db.ref('users').on('value', snap => {
+      const list = document.getElementById('player-list');
+      list.innerHTML = '<h3>Игроки онлайн / недавно активны</h3>';
+      const now = Date.now();
+      snap.forEach(child => {
+        const data = child.val();
+        const lastActive = data.lastActive || 0;
+        const minutesAgo = Math.round((now - lastActive) / 60000);
+        const status = minutesAgo < 5 ? '<span class="online">онлайн</span>' : `<span class="offline">${minutesAgo} мин назад</span>`;
+        const div = document.createElement('div');
+        div.className = 'player-item';
+        div.innerHTML = `ID ${child.key}: ${data.balance || 0} чипов • ${status}`;
+        list.appendChild(div);
+      });
+    });
+  }
+
   document.getElementById('admin-change').addEventListener('click', () => {
+    const uid = document.getElementById('admin-user').value.trim();
     const sum = parseInt(document.getElementById('admin-sum').value);
-    if (!isNaN(sum)) {
-      updateChips(sum);
-      document.getElementById('admin-status').textContent = `Чипы изменены на ${sum > 0 ? '+' : ''}${sum}`;
+    if (uid && !isNaN(sum)) {
+      db.ref(`users/${uid}/balance`).transaction(current => (current || 0) + sum);
+      document.getElementById('admin-status').textContent = `Баланс ${uid} изменён на ${sum}`;
+      loadPlayers();
     } else {
-      alert('Введите число');
+      alert('Введите ID и сумму');
     }
   });
 
-  console.log("Mini App полностью загружен. Кнопки привязаны.");
+  console.log("Mini App загружен. Кнопки привязаны.");
 </script>
 </body>
 </html>
