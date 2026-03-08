@@ -5,325 +5,68 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Card Games</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
   <style>
-    :root {
-      --tg-bg: #0f0f0f;
-      --tg-section-bg: #1c1c1e;
-      --tg-text: #ffffff;
-      --tg-hint: #8e8e93;
-      --tg-accent: #007aff;
-      --tg-red: #ff3b30;
-      --tg-green: #34c759;
-      --tg-gray: #8e8e93;
-      --card-bg: #2c2c2e;
-      --card-border: #3a3a3c;
-    }
-    body {
-      margin: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      background: var(--tg-bg);
-      color: var(--tg-text);
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    header {
-      padding: 16px;
-      background: var(--tg-section-bg);
-      text-align: center;
-      font-size: 1.4rem;
-      font-weight: 600;
-      border-bottom: 1px solid var(--card-border);
-    }
-    #chips {
-      padding: 12px;
-      background: var(--tg-section-bg);
-      text-align: center;
-      font-size: 1.4rem;
-      font-weight: 500;
-      border-bottom: 1px solid var(--card-border);
-    }
-    nav {
-      display: flex;
-      background: var(--tg-section-bg);
-      padding: 8px 16px;
-      gap: 8px;
-      justify-content: center;
-      border-bottom: 1px solid var(--card-border);
-    }
-    nav button {
-      padding: 10px 20px;
-      background: var(--card-bg);
-      color: var(--tg-text);
-      border: 1px solid var(--card-border);
-      border-radius: 10px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.2s;
-    }
-    nav button.active {
-      background: var(--tg-accent);
-      border-color: var(--tg-accent);
-      color: white;
-    }
-    nav button:hover {
-      background: #2a2a2c;
-    }
-    .tab {
-      display: none;
-      padding: 20px;
-      flex: 1;
-      overflow-y: auto;
-    }
-    .tab.active {
-      display: block;
-    }
-    .hand {
-      display: flex;
-      gap: 10px;
-      justify-content: center;
-      margin: 20px 0;
-      flex-wrap: wrap;
-    }
-    .card {
-      width: 70px;
-      height: 100px;
-      background: var(--card-bg);
-      color: #fff;
-      border-radius: 12px;
-      border: 1px solid var(--card-border);
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      font-weight: bold;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-      transition: transform 0.2s;
-    }
-    .card:hover {
-      transform: scale(1.05);
-    }
-    .card.red { color: var(--red); }
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: center;
-      padding: 20px;
-    }
-    button {
-      padding: 14px 28px;
-      font-size: 1.1rem;
-      border: none;
-      border-radius: 12px;
-      color: white;
-      cursor: pointer;
-      transition: transform 0.15s, opacity 0.2s;
-    }
-    button:active {
-      transform: scale(0.96);
-    }
-    .fold { background: var(--red); }
-    .check { background: var(--gray); }
-    .bet { background: var(--green); }
-    .raise { background: var(--blue); }
-    .hit { background: var(--green); }
-    .stand { background: var(--red); }
-    .new-game { background: var(--blue); margin-top: 30px; }
-    .msg {
-      text-align: center;
-      font-size: 1.3rem;
-      margin: 20px 0;
-      min-height: 30px;
-      color: var(--text);
-    }
-    .win { color: var(--win); font-weight: bold; }
-    .lose { color: var(--lose); font-weight: bold; }
-    .tie { color: var(--tie); font-weight: bold; }
+    /* твой текущий стиль (оставь как есть, я его не меняю) */
   </style>
 </head>
 <body>
+  <!-- твой текущий HTML (header, chips, nav, poker, blackjack) -->
 
-<header>Card Games</header>
+  <script>
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
 
-<div id="chips">Чипы: 1000</div>
+    console.log("Mini App загружен");
+    console.log("Твой Telegram ID:", tg.initDataUnsafe?.user?.id);
 
-<nav>
-  <button data-tab="poker">Poker</button>
-  <button data-tab="blackjack" class="active">Blackjack</button>
-</nav>
+    // Firebase config (твой)
+    const firebaseConfig = {
+      apiKey: "AIzaSyDaFDepdyQdw23ieJilXEfO_oVN0rIhHg",
+      authDomain: "tggame-56b27.firebaseapp.com",
+      databaseURL: "https://tggame-56b27-default-rtdb.firebaseio.com",
+      projectId: "tggame-56b27",
+      storageBucket: "tggame-56b27.appspot.com",
+      messagingSenderId: "937043251707",
+      appId: "1:937043251707:web:aad7b1b9408b6d07d5bb5e",
+      measurementId: "G-Q15Q0MS2L4"
+    };
 
-<div id="poker" class="tab">
-  <div class="pot">Пот: 420</div>
-  <div class="hand" id="poker-comm"></div>
-  <div class="hand" id="poker-hand"></div>
-  <div class="msg" id="poker-msg">Раунд: Префлоп</div>
-  <div class="actions">
-    <button class="fold" id="p-fold">Fold</button>
-    <button class="check" id="p-check">Check/Call</button>
-    <button class="bet" id="p-bet">Bet 100</button>
-    <button class="raise" id="p-raise">Raise 300</button>
-  </div>
-</div>
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-<div id="blackjack" class="tab active">
-  <div id="bj-bet-area">
-    <input type="number" id="bj-bet" value="100" min="10" style="width:80px;text-align:center;margin:10px 0; background:#222; color:white; border:1px solid #444; border-radius:8px; padding:8px;">
-    <button class="bet" id="bj-bet-btn">Поставить</button>
-  </div>
-  <div class="hand" id="bj-dealer"></div>
-  <div class="hand" id="bj-player"></div>
-  <div class="msg" id="bj-msg"></div>
-  <div class="actions" id="bj-actions" style="display:none;">
-    <button class="hit" id="bj-hit">Hit</button>
-    <button class="stand" id="bj-stand">Stand</button>
-  </div>
-  <button class="new-game" id="bj-new" style="display:none;">Новая игра</button>
-</div>
+    const userId = tg.initDataUnsafe?.user?.id || 'guest';
 
-<script>
-  const tg = window.Telegram.WebApp;
-  tg.ready();
-  tg.expand();
-
-  console.log("Mini App загружен");
-
-  // Чипы
-  let chips = parseInt(localStorage.getItem('chips') || '1000');
-  function updateChips(delta = 0) {
-    chips += delta;
-    localStorage.setItem('chips', chips);
-    document.getElementById('chips').textContent = `Чипы: ${chips}`;
-  }
-  updateChips();
-
-  // Навигация
-  document.querySelectorAll('nav button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      document.getElementById(btn.dataset.tab).classList.add('active');
-      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+    // Чипы
+    let chips = 1000;
+    db.ref(`users/${userId}/balance`).on('value', snap => {
+      chips = snap.val() || 1000;
+      document.getElementById('chips').textContent = `Чипы: ${chips}`;
+      localStorage.setItem('chips', chips); // резервная копия
     });
-  });
 
-  // Poker (простой, чтобы не отвлекать)
-  function initPoker() {
-    const suits = ['♥','♦','♣','♠'];
-    const ranks = ['A','K','Q','J','10','9','8','7','6','5','4','3','2'];
-    const cards = [];
-    for (let s of suits) for (let r of ranks) cards.push({r, s, color: (s==='♥'||s==='♦')?'red':''});
-    cards.sort(() => Math.random() - 0.5);
-    const comm = cards.slice(0,5).map(c => `<div class="card ${c.color}">${c.r}${c.s}</div>`).join('');
-    const hand = cards.slice(5,7).map(c => `<div class="card ${c.color}">${c.r}${c.s}</div>`).join('');
-    document.getElementById('poker-comm').innerHTML = comm;
-    document.getElementById('poker-hand').innerHTML = hand;
-  }
-  initPoker();
-
-  document.getElementById('p-fold').addEventListener('click', () => alert('Fold нажат'));
-  document.getElementById('p-check').addEventListener('click', () => alert('Check/Call нажат'));
-  document.getElementById('p-bet').addEventListener('click', () => alert('Bet 100 нажат'));
-  document.getElementById('p-raise').addEventListener('click', () => alert('Raise 300 нажат'));
-
-  // Blackjack
-  let bjDeck = [], bjPlayer = [], bjDealer = [], bjBet = 0;
-
-  document.getElementById('bj-bet-btn').addEventListener('click', () => {
-    bjBet = parseInt(document.getElementById('bj-bet').value);
-    if (bjBet < 10 || bjBet > chips) return alert('Неверная ставка');
-    updateChips(-bjBet);
-
-    bjDeck = [];
-    ['♥','♦','♣','♠'].forEach(s => ['2','3','4','5','6','7','8','9','10','J','Q','K','A'].forEach(r => bjDeck.push({r,s})));
-    bjDeck.sort(() => Math.random() - 0.5);
-
-    bjPlayer = [bjDeck.pop(), bjDeck.pop()];
-    bjDealer = [bjDeck.pop(), bjDeck.pop()];
-
-    document.getElementById('bj-player').innerHTML = bjPlayer.map(c => `<div class="card ${c.s==='♥'||c.s==='♦'?'red':''}">${c.r}${c.s}</div>`).join('');
-    document.getElementById('bj-dealer').innerHTML = `<div class="card">?</div><div class="card ${bjDealer[1].s==='♥'||bjDealer[1].s==='♦'?'red':''}">${bjDealer[1].r}${bjDealer[1].s}</div>`;
-
-    document.getElementById('bj-bet-area').style.display = 'none';
-    document.getElementById('bj-actions').style.display = 'flex';
-    document.getElementById('bj-msg').className = 'msg';
-    document.getElementById('bj-msg').textContent = 'Твой ход';
-  });
-
-  document.getElementById('bj-hit').addEventListener('click', () => {
-    bjPlayer.push(bjDeck.pop());
-    document.getElementById('bj-player').innerHTML = bjPlayer.map(c => `<div class="card ${c.s==='♥'||c.s==='♦'?'red':''}">${c.r}${c.s}</div>`).join('');
-    if (bjValue(bjPlayer) > 21) {
-      document.getElementById('bj-msg').className = 'msg lose';
-      document.getElementById('bj-msg').textContent = 'Перебор! Проигрыш';
-      document.getElementById('bj-actions').style.display = 'none';
-      document.getElementById('bj-new').style.display = 'block';
-    } else {
-      document.getElementById('bj-msg').className = 'msg';
-      document.getElementById('bj-msg').textContent = 'Ты взял карту';
+    // Обновляем lastActive (чтобы админ видел, кто онлайн)
+    function updateLastActive() {
+      db.ref(`users/${userId}/lastActive`).set(Date.now());
     }
-  });
+    setInterval(updateLastActive, 30000);
+    updateLastActive();
 
-  document.getElementById('bj-stand').addEventListener('click', () => {
-    document.getElementById('bj-dealer').innerHTML = bjDealer.map(c => `<div class="card ${c.s==='♥'||c.s==='♦'?'red':''}">${c.r}${c.s}</div>`).join('');
-    let dv = bjValue(bjDealer);
-    while (dv < 17) {
-      bjDealer.push(bjDeck.pop());
-      document.getElementById('bj-dealer').innerHTML = bjDealer.map(c => `<div class="card ${c.s==='♥'||c.s==='♦'?'red':''}">${c.r}${c.s}</div>`).join('');
-      dv = bjValue(bjDealer);
+    // Все твои функции блэкджека и покера (оставь как есть)
+
+    // При изменении чипов — сохраняем в базу
+    function updateChips(delta = 0) {
+      chips += delta;
+      db.ref(`users/${userId}/balance`).set(chips);
+      document.getElementById('chips').textContent = `Чипы: ${chips}`;
+      localStorage.setItem('chips', chips);
     }
 
-    const pv = bjValue(bjPlayer);
-    let msg = '';
-    let className = 'msg';
-    if (pv > 21) {
-      msg = 'Перебор! Проигрыш';
-      className = 'lose';
-    } else if (dv > 21) {
-      msg = 'Дилер перебрал! Выигрыш';
-      className = 'win';
-      updateChips(bjBet * 2);
-    } else if (pv > dv) {
-      msg = 'Выигрыш!';
-      className = 'win';
-      updateChips(bjBet * 2);
-    } else if (pv < dv) {
-      msg = 'Проигрыш';
-      className = 'lose';
-    } else {
-      msg = 'Ничья';
-      className = 'tie';
-      updateChips(bjBet);
-    }
+    // Остальной код (навигация, блэкджек, покер) — как было раньше
 
-    document.getElementById('bj-msg').className = className;
-    document.getElementById('bj-msg').textContent = msg;
-    document.getElementById('bj-actions').style.display = 'none';
-    document.getElementById('bj-new').style.display = 'block';
-  });
-
-  document.getElementById('bj-new').addEventListener('click', () => {
-    document.getElementById('bj-msg').className = 'msg';
-    document.getElementById('bj-msg').textContent = '';
-    document.getElementById('bj-new').style.display = 'none';
-    document.getElementById('bj-bet-area').style.display = 'block';
-    document.getElementById('bj-player').innerHTML = '';
-    document.getElementById('bj-dealer').innerHTML = '';
-  });
-
-  function bjValue(hand) {
-    let v = 0, aces = 0;
-    hand.forEach(c => {
-      v += ['J','Q','K'].includes(c.r) ? 10 : (c.r === 'A' ? 11 : +c.r);
-      if (c.r === 'A') aces++;
-    });
-    while (v > 21 && aces--) v -= 10;
-    return v;
-  }
-
-  console.log("Mini App полностью загружен. Кнопки привязаны.");
-</script>
+    console.log("Mini App полностью загружен. Кнопки привязаны.");
+  </script>
 </body>
 </html>
