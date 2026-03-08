@@ -5,12 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Card Games</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
   <style>
+    :root {
+      --bg: #000;
+      --card: #fff;
+      --text: #fff;
+      --gray: #444;
+      --red: #c62828;
+      --green: #388e3c;
+      --blue: #1976d2;
+      --gold: #ffcc00;
+    }
     body {
       margin: 0;
       font-family: Arial, sans-serif;
-      background: #000;
-      color: #fff;
+      background: var(--bg);
+      color: var(--text);
       height: 100vh;
       display: flex;
       flex-direction: column;
@@ -22,7 +34,7 @@
     }
     #chips {
       background: #222;
-      border-bottom: 1px solid #444;
+      border-bottom: 1px solid var(--gray);
       font-size: 1.3rem;
     }
     nav {
@@ -41,7 +53,7 @@
       cursor: pointer;
     }
     nav button.active {
-      background: #0066cc;
+      background: var(--blue);
     }
     .tab {
       display: none;
@@ -62,7 +74,7 @@
     .card {
       width: 60px;
       height: 90px;
-      background: #fff;
+      background: var(--card);
       color: #000;
       border-radius: 6px;
       display: flex;
@@ -72,7 +84,7 @@
       font-weight: bold;
       box-shadow: 0 4px 8px rgba(0,0,0,0.6);
     }
-    .card.red { color: #c00; }
+    .card.red { color: var(--red); }
     .actions {
       display: flex;
       flex-wrap: wrap;
@@ -89,12 +101,12 @@
       cursor: pointer;
       min-width: 80px;
     }
-    .fold { background: #c62828; }
+    .fold { background: var(--red); }
     .check { background: #757575; }
-    .bet { background: #388e3c; }
-    .raise { background: #1976d2; }
-    .hit { background: #4caf50; }
-    .stand { background: #d32f2f; }
+    .bet { background: var(--green); }
+    .raise { background: var(--blue); }
+    .hit { background: var(--green); }
+    .stand { background: var(--red); }
     .new-game { background: #0288d1; margin-top: 20px; }
     .msg {
       text-align: center;
@@ -149,16 +161,37 @@
   tg.expand();
 
   console.log("Mini App загружен");
-  console.log("Твой ID:", tg.initDataUnsafe?.user?.id);
+  console.log("Твой Telegram ID:", tg.initDataUnsafe?.user?.id);
 
-  // Чипы (localStorage — просто и надёжно)
-  let chips = parseInt(localStorage.getItem('chips') || '1000');
-  function updateChips(delta = 0) {
-    chips += delta;
-    localStorage.setItem('chips', chips);
+  // Firebase (твой config)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDaFDepdyQdw23ieJilXEfO_oVN0rIhHg",
+    authDomain: "tggame-56b27.firebaseapp.com",
+    databaseURL: "https://tggame-56b27-default-rtdb.firebaseio.com",
+    projectId: "tggame-56b27",
+    storageBucket: "tggame-56b27.appspot.com",
+    messagingSenderId: "937043251707",
+    appId: "1:937043251707:web:aad7b1b9408b6d07d5bb5e",
+    measurementId: "G-Q15Q0MS2L4"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
+  // Чипы
+  let chips = 1000;
+  const userId = tg.initDataUnsafe?.user?.id || 'guest';
+  db.ref(`users/${userId}/balance`).on('value', snap => {
+    chips = snap.val() || 1000;
     document.getElementById('chips').textContent = `Чипы: ${chips}`;
+  });
+
+  // Обновляем lastActive
+  function updateLastActive() {
+    db.ref(`users/${userId}/lastActive`).set(Date.now());
   }
-  updateChips();
+  setInterval(updateLastActive, 30000);
+  updateLastActive();
 
   // Навигация
   document.querySelectorAll('nav button').forEach(btn => {
@@ -170,7 +203,7 @@
     });
   });
 
-  // Poker — карты
+  // Poker
   function initPoker() {
     const suits = ['♥','♦','♣','♠'];
     const ranks = ['A','K','Q','J','10','9','8','7','6','5','4','3','2'];
