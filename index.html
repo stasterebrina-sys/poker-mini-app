@@ -337,25 +337,37 @@
   document.getElementById('bj-stand').addEventListener('click', bjStand);
   document.getElementById('bj-new').addEventListener('click', bjNewGame);
 
-  // Admin Panel
-  const ADMIN_PASS = 'siska671488'; 
-  document.getElementById('admin-login').addEventListener('click', () => {
-    if (document.getElementById('admin-password').value === ADMIN_PASS) {
-      document.getElementById('admin-controls').style.display = 'block';
-      document.getElementById('admin-login').style.display = 'none';
-      document.getElementById('admin-password').style.display = 'none';
-    } else {
-      alert('Неверный пароль');
-    }
-  });
+// Admin Panel
+const ADMIN_PASS = 'admin123'; // ← твой пароль, можно изменить
 
-  document.getElementById('admin-apply').addEventListener('click', () => {
-    const amount = parseInt(document.getElementById('admin-amount').value);
-    if (!isNaN(amount)) {
-      updateChips(amount);
-      document.getElementById('admin-result').textContent = `Изменено на ${amount > 0 ? '+' : ''}${amount} чипов`;
-    } else {
-      alert('Введите число');
+document.getElementById('admin-login').addEventListener('click', () => {
+  const pw = document.getElementById('admin-password').value.trim();
+  console.log('Введённый пароль:', pw); // для отладки
+
+  if (pw === ADMIN_PASS) {
+    console.log('Пароль верный — показываем контролы');
+    document.getElementById('admin-controls').style.display = 'block';
+    document.getElementById('admin-login').style.display = 'none';
+    document.getElementById('admin-password').style.display = 'none';
+    document.getElementById('admin-result').textContent = 'Добро пожаловать в админку!';
+  } else {
+    alert('Неверный пароль!');
+    console.log('Неверный пароль');
+  }
+});
+
+document.getElementById('admin-apply').addEventListener('click', () => {
+  const amount = parseInt(document.getElementById('admin-amount').value);
+  if (isNaN(amount)) {
+    alert('Введите число!');
+    return;
+  }
+
+  updateChips(amount);
+  document.getElementById('admin-result').textContent = 
+    `Изменено на ${amount > 0 ? '+' : ''}${amount} чипов. Новый баланс: ${chips}`;
+  console.log(`Админ изменил чипы на ${amount}`);
+});
     }
   });
 
