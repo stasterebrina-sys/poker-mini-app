@@ -3,91 +3,138 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Blackjack</title>
+  <title>Card Games</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
   <style>
     :root {
-      --bg: #000;
-      --card: #fff;
-      --text: #fff;
-      --gray: #444;
-      --red: #c62828;
-      --green: #388e3c;
-      --blue: #1976d2;
-      --win: #4caf50;
-      --lose: #f44336;
-      --tie: #757575;
+      --tg-bg: #0f0f0f;
+      --tg-section-bg: #1c1c1e;
+      --tg-text: #ffffff;
+      --tg-hint: #8e8e93;
+      --tg-accent: #007aff;
+      --tg-red: #ff3b30;
+      --tg-green: #34c759;
+      --tg-gray: #8e8e93;
+      --card-bg: #2c2c2e;
+      --card-border: #3a3a3c;
     }
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: var(--bg);
-      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: var(--tg-bg);
+      color: var(--tg-text);
       height: 100vh;
       display: flex;
       flex-direction: column;
-      align-items: center;
+      overflow: hidden;
     }
-    header, #chips {
-      padding: 12px;
-      background: #111;
+    header {
+      padding: 16px;
+      background: var(--tg-section-bg);
       text-align: center;
-      width: 100%;
+      font-size: 1.4rem;
+      font-weight: 600;
+      border-bottom: 1px solid var(--card-border);
     }
     #chips {
-      background: #222;
-      border-bottom: 1px solid var(--gray);
-      font-size: 1.5rem;
+      padding: 12px;
+      background: var(--tg-section-bg);
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: 500;
+      border-bottom: 1px solid var(--card-border);
     }
-    .container {
-      max-width: 500px;
-      width: 100%;
+    nav {
+      display: flex;
+      background: var(--tg-section-bg);
+      padding: 8px 16px;
+      gap: 8px;
+      justify-content: center;
+      border-bottom: 1px solid var(--card-border);
+    }
+    nav button {
+      padding: 10px 20px;
+      background: var(--card-bg);
+      color: var(--tg-text);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    nav button.active {
+      background: var(--tg-accent);
+      border-color: var(--tg-accent);
+      color: white;
+    }
+    nav button:hover {
+      background: #2a2a2c;
+    }
+    .tab {
+      display: none;
       padding: 20px;
+      flex: 1;
+      overflow-y: auto;
+    }
+    .tab.active {
+      display: block;
     }
     .hand {
       display: flex;
       gap: 10px;
       justify-content: center;
       margin: 20px 0;
+      flex-wrap: wrap;
     }
     .card {
       width: 70px;
       height: 100px;
-      background: var(--card);
-      color: #000;
-      border-radius: 8px;
+      background: var(--card-bg);
+      color: #fff;
+      border-radius: 12px;
+      border: 1px solid var(--card-border);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       font-size: 2rem;
       font-weight: bold;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.6);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+      transition: transform 0.2s;
+    }
+    .card:hover {
+      transform: scale(1.05);
     }
     .card.red { color: var(--red); }
     .actions {
       display: flex;
-      gap: 15px;
       flex-wrap: wrap;
+      gap: 12px;
       justify-content: center;
-      margin-top: 30px;
+      padding: 20px;
     }
     button {
-      padding: 15px 30px;
-      font-size: 1.2rem;
+      padding: 14px 28px;
+      font-size: 1.1rem;
       border: none;
-      border-radius: 8px;
+      border-radius: 12px;
       color: white;
       cursor: pointer;
+      transition: transform 0.15s, opacity 0.2s;
     }
+    button:active {
+      transform: scale(0.96);
+    }
+    .fold { background: var(--red); }
+    .check { background: var(--gray); }
     .bet { background: var(--green); }
-    .hit { background: #4caf50; }
+    .raise { background: var(--blue); }
+    .hit { background: var(--green); }
     .stand { background: var(--red); }
     .new-game { background: var(--blue); margin-top: 30px; }
     .msg {
       text-align: center;
-      font-size: 1.4rem;
+      font-size: 1.3rem;
       margin: 20px 0;
       min-height: 30px;
       color: var(--text);
@@ -99,26 +146,40 @@
 </head>
 <body>
 
-<header>Blackjack</header>
+<header>Card Games</header>
 
 <div id="chips">Чипы: 1000</div>
 
-<div class="container">
+<nav>
+  <button data-tab="poker">Poker</button>
+  <button data-tab="blackjack" class="active">Blackjack</button>
+</nav>
+
+<div id="poker" class="tab">
+  <div class="pot">Пот: 420</div>
+  <div class="hand" id="poker-comm"></div>
+  <div class="hand" id="poker-hand"></div>
+  <div class="msg" id="poker-msg">Раунд: Префлоп</div>
+  <div class="actions">
+    <button class="fold" id="p-fold">Fold</button>
+    <button class="check" id="p-check">Check/Call</button>
+    <button class="bet" id="p-bet">Bet 100</button>
+    <button class="raise" id="p-raise">Raise 300</button>
+  </div>
+</div>
+
+<div id="blackjack" class="tab active">
   <div id="bj-bet-area">
-    <input type="number" id="bj-bet" value="100" min="10" max="500" style="width:80px;text-align:center;margin:10px 0;">
+    <input type="number" id="bj-bet" value="100" min="10" style="width:80px;text-align:center;margin:10px 0; background:#222; color:white; border:1px solid #444; border-radius:8px; padding:8px;">
     <button class="bet" id="bj-bet-btn">Поставить</button>
   </div>
-
   <div class="hand" id="bj-dealer"></div>
   <div class="hand" id="bj-player"></div>
-
   <div class="msg" id="bj-msg"></div>
-
   <div class="actions" id="bj-actions" style="display:none;">
     <button class="hit" id="bj-hit">Hit</button>
     <button class="stand" id="bj-stand">Stand</button>
   </div>
-
   <button class="new-game" id="bj-new" style="display:none;">Новая игра</button>
 </div>
 
@@ -127,39 +188,45 @@
   tg.ready();
   tg.expand();
 
-  console.log("Blackjack загружен");
-  console.log("Твой Telegram ID:", tg.initDataUnsafe?.user?.id);
-
-  // Firebase config (твой)
-  const firebaseConfig = {
-    apiKey: "AIzaSyDaFDepdyQdw23ieJilXEfO_oVN0rIhHg",
-    authDomain: "tggame-56b27.firebaseapp.com",
-    databaseURL: "https://tggame-56b27-default-rtdb.firebaseio.com",
-    projectId: "tggame-56b27",
-    storageBucket: "tggame-56b27.appspot.com",
-    messagingSenderId: "937043251707",
-    appId: "1:937043251707:web:aad7b1b9408b6d07d5bb5e",
-    measurementId: "G-Q15Q0MS2L4"
-  };
-
-  firebase.initializeApp(firebaseConfig);
-  const db = firebase.database();
-
-  const userId = tg.initDataUnsafe?.user?.id || 'guest';
+  console.log("Mini App загружен");
 
   // Чипы
-  let chips = 1000;
-  db.ref(`users/${userId}/balance`).on('value', snap => {
-    chips = snap.val() || 1000;
+  let chips = parseInt(localStorage.getItem('chips') || '1000');
+  function updateChips(delta = 0) {
+    chips += delta;
+    localStorage.setItem('chips', chips);
     document.getElementById('chips').textContent = `Чипы: ${chips}`;
+  }
+  updateChips();
+
+  // Навигация
+  document.querySelectorAll('nav button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(btn.dataset.tab).classList.add('active');
+      document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+    });
   });
 
-  // Обновляем lastActive (чтобы админ видел, кто онлайн)
-  function updateLastActive() {
-    db.ref(`users/${userId}/lastActive`).set(Date.now());
+  // Poker (простой, чтобы не отвлекать)
+  function initPoker() {
+    const suits = ['♥','♦','♣','♠'];
+    const ranks = ['A','K','Q','J','10','9','8','7','6','5','4','3','2'];
+    const cards = [];
+    for (let s of suits) for (let r of ranks) cards.push({r, s, color: (s==='♥'||s==='♦')?'red':''});
+    cards.sort(() => Math.random() - 0.5);
+    const comm = cards.slice(0,5).map(c => `<div class="card ${c.color}">${c.r}${c.s}</div>`).join('');
+    const hand = cards.slice(5,7).map(c => `<div class="card ${c.color}">${c.r}${c.s}</div>`).join('');
+    document.getElementById('poker-comm').innerHTML = comm;
+    document.getElementById('poker-hand').innerHTML = hand;
   }
-  setInterval(updateLastActive, 30000);
-  updateLastActive();
+  initPoker();
+
+  document.getElementById('p-fold').addEventListener('click', () => alert('Fold нажат'));
+  document.getElementById('p-check').addEventListener('click', () => alert('Check/Call нажат'));
+  document.getElementById('p-bet').addEventListener('click', () => alert('Bet 100 нажат'));
+  document.getElementById('p-raise').addEventListener('click', () => alert('Raise 300 нажат'));
 
   // Blackjack
   let bjDeck = [], bjPlayer = [], bjDealer = [], bjBet = 0;
@@ -213,21 +280,21 @@
     let className = 'msg';
     if (pv > 21) {
       msg = 'Перебор! Проигрыш';
-      className = 'msg lose';
+      className = 'lose';
     } else if (dv > 21) {
       msg = 'Дилер перебрал! Выигрыш';
-      className = 'msg win';
+      className = 'win';
       updateChips(bjBet * 2);
     } else if (pv > dv) {
       msg = 'Выигрыш!';
-      className = 'msg win';
+      className = 'win';
       updateChips(bjBet * 2);
     } else if (pv < dv) {
       msg = 'Проигрыш';
-      className = 'msg lose';
+      className = 'lose';
     } else {
       msg = 'Ничья';
-      className = 'msg tie';
+      className = 'tie';
       updateChips(bjBet);
     }
 
@@ -256,7 +323,7 @@
     return v;
   }
 
-  console.log("Blackjack полностью загружен. Кнопки привязаны.");
+  console.log("Mini App полностью загружен. Кнопки привязаны.");
 </script>
 </body>
 </html>
