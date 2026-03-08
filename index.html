@@ -3,126 +3,40 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
-  <title>Card Games Mini App</title>
+  <title>Card Games Online</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
   <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: #000;
-      color: #fff;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
-    }
-    header {
-      padding: 10px;
-      background: #111;
-      text-align: center;
-      font-size: 1.4rem;
-    }
-    #chips {
-      background: #222;
-      padding: 12px;
-      text-align: center;
-      font-size: 1.3rem;
-      border-bottom: 1px solid #444;
-    }
-    nav {
-      display: flex;
-      background: #111;
-      padding: 8px;
-      gap: 8px;
-      justify-content: center;
-    }
-    nav button {
-      padding: 10px 20px;
-      background: #333;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    nav button.active {
-      background: #0066cc;
-    }
-    .tab {
-      display: none;
-      padding: 16px;
-      flex: 1;
-      overflow-y: auto;
-    }
-    .tab.active {
-      display: block;
-    }
-    .hand {
-      display: flex;
-      gap: 8px;
-      justify-content: center;
-      margin: 16px 0;
-      flex-wrap: wrap;
-    }
-    .card {
-      width: 60px;
-      height: 90px;
-      background: #fff;
-      color: #000;
-      border-radius: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 1.6rem;
-      font-weight: bold;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.6);
-    }
-    .card.red { color: #c00; }
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      padding: 16px;
-    }
-    button {
-      padding: 12px 24px;
-      font-size: 1rem;
-      border: none;
-      border-radius: 6px;
-      color: white;
-      cursor: pointer;
-      min-width: 80px;
-    }
-    .fold { background: #c62828; }
-    .check { background: #757575; }
-    .bet   { background: #388e3c; }
-    .raise { background: #1976d2; }
-    .hit   { background: #4caf50; }
-    .stand { background: #d32f2f; }
-    .new-game { background: #0288d1; margin-top: 20px; }
-    .msg {
-      text-align: center;
-      font-size: 1.1rem;
-      margin: 16px 0;
-      min-height: 24px;
-    }
-    #admin-panel {
-      padding: 20px;
-      background: #222;
-      border-radius: 8px;
-      margin: 20px auto;
-      max-width: 300px;
-    }
-    #admin-panel input {
-      width: 100%;
-      margin: 10px 0;
-      padding: 8px;
-      box-sizing: border-box;
-    }
+    body { margin:0; font-family:Arial,sans-serif; background:#000; color:#fff; height:100vh; display:flex; flex-direction:column; overflow:hidden; }
+    header { padding:12px; background:#111; text-align:center; font-size:1.4rem; }
+    #chips { background:#222; padding:12px; text-align:center; font-size:1.3rem; border-bottom:1px solid #444; }
+    nav { display:flex; background:#111; padding:8px; gap:8px; justify-content:center; }
+    nav button { padding:10px 20px; background:#333; color:white; border:none; border-radius:6px; cursor:pointer; }
+    nav button.active { background:#0066cc; }
+    .tab { display:none; padding:16px; flex:1; overflow-y:auto; }
+    .tab.active { display:block; }
+    .hand { display:flex; gap:8px; justify-content:center; margin:16px 0; flex-wrap:wrap; }
+    .card { width:60px; height:90px; background:#fff; color:#000; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:1.6rem; font-weight:bold; box-shadow:0 4px 8px rgba(0,0,0,0.6); }
+    .card.red { color:#c00; }
+    .actions { display:flex; flex-wrap:wrap; gap:10px; justify-content:center; padding:16px; }
+    button { padding:12px 24px; font-size:1rem; border:none; border-radius:6px; color:white; cursor:pointer; }
+    .fold { background:#c62828; }
+    .check { background:#757575; }
+    .bet { background:#388e3c; }
+    .raise { background:#1976d2; }
+    .hit { background:#4caf50; }
+    .stand { background:#d32f2f; }
+    .new-game { background:#0288d1; margin-top:20px; }
+    .msg { text-align:center; font-size:1.1rem; margin:16px 0; min-height:24px; }
+    #admin-panel { padding:20px; background:#222; border-radius:8px; margin:20px auto; max-width:320px; }
+    #admin-panel input { width:100%; margin:10px 0; padding:8px; box-sizing:border-box; }
+    .player-item { margin:10px 0; padding:10px; background:#333; border-radius:6px; }
   </style>
 </head>
 <body>
 
-<header>Card Games Mini App</header>
+<header>Card Games Online</header>
 
 <div id="chips">Чипы: 1000</div>
 
@@ -163,8 +77,10 @@
 <div id="admin" class="tab">
   <div id="admin-panel">
     <h3>Админ-панель</h3>
-    <input type="number" id="admin-sum" placeholder="Сумма (+ добавить, - отнять)" value="0">
-    <button id="admin-change">Применить к себе</button>
+    <div id="player-list"></div>
+    <input type="text" id="admin-user" placeholder="User ID">
+    <input type="number" id="admin-sum" placeholder="Сумма (+ добавить, - отнять)">
+    <button id="admin-change">Применить</button>
     <div id="admin-status" class="msg"></div>
   </div>
 </div>
@@ -179,18 +95,31 @@
 
   // Твой ID — админка видна только тебе
   const MY_ADMIN_ID = 1920427639;
-  if (tg.initDataUnsafe?.user?.id === MY_ADMIN_ID) {
+  if (tg.initDataUnsafe?.user?.id == MY_ADMIN_ID) {
     document.getElementById('admin-tab').style.display = 'block';
   }
 
+  // Firebase (твой config)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDaFDepdyQdw23ieJilXEfO_oVN0rIhHg",
+    authDomain: "tggame-56b27.firebaseapp.com",
+    databaseURL: "https://tggame-56b27-default-rtdb.firebaseio.com",
+    projectId: "tggame-56b27",
+    storageBucket: "tggame-56b27.appspot.com",
+    messagingSenderId: "937043251707",
+    appId: "1:937043251707:web:aad7b1b9408b6d07d5bb5e",
+    measurementId: "G-Q15Q0MS2L4"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
+
   // Чипы
-  let chips = parseInt(localStorage.getItem('chips') || '1000');
-  function updateChips(delta = 0) {
-    chips += delta;
-    localStorage.setItem('chips', chips);
+  let chips = 1000;
+  db.ref(`users/${tg.initDataUnsafe?.user?.id || 'guest'}/balance`).on('value', snap => {
+    chips = snap.val() || 1000;
     document.getElementById('chips').textContent = `Чипы: ${chips}`;
-  }
-  updateChips();
+  });
 
   // Навигация
   document.querySelectorAll('nav button').forEach(btn => {
@@ -206,25 +135,15 @@
   document.getElementById('bj-bet-btn').addEventListener('click', () => {
     const bet = parseInt(document.getElementById('bj-bet').value);
     if (bet < 10 || bet > chips) return alert('Неверная ставка');
-    updateChips(-bet);
-    alert(`Ставка ${bet} сделана! (игра началась)`);
+    chips -= bet;
+    db.ref(`users/${tg.initDataUnsafe?.user?.id || 'guest'}/balance`).set(chips);
+    document.getElementById('bj-msg').textContent = 'Игра началась!';
     document.getElementById('bj-bet-area').style.display = 'none';
     document.getElementById('bj-actions').style.display = 'flex';
-    document.getElementById('bj-msg').textContent = 'Твой ход';
   });
 
-  document.getElementById('bj-hit').addEventListener('click', () => {
-    alert('Hit нажат');
-    document.getElementById('bj-msg').textContent = 'Ты взял карту';
-  });
-
-  document.getElementById('bj-stand').addEventListener('click', () => {
-    alert('Stand нажат');
-    document.getElementById('bj-msg').textContent = 'Ты пасуешь';
-    document.getElementById('bj-actions').style.display = 'none';
-    document.getElementById('bj-new').style.display = 'block';
-  });
-
+  document.getElementById('bj-hit').addEventListener('click', () => alert('Hit!'));
+  document.getElementById('bj-stand').addEventListener('click', () => alert('Stand!'));
   document.getElementById('bj-new').addEventListener('click', () => {
     document.getElementById('bj-msg').textContent = '';
     document.getElementById('bj-new').style.display = 'none';
@@ -233,23 +152,43 @@
   });
 
   // Poker
-  document.getElementById('p-fold').addEventListener('click', () => alert('Fold нажат'));
-  document.getElementById('p-check').addEventListener('click', () => alert('Check/Call нажат'));
-  document.getElementById('p-bet').addEventListener('click', () => alert('Bet 100 нажат'));
-  document.getElementById('p-raise').addEventListener('click', () => alert('Raise 300 нажат'));
+  document.getElementById('p-fold').addEventListener('click', () => alert('Fold'));
+  document.getElementById('p-check').addEventListener('click', () => alert('Check'));
+  document.getElementById('p-bet').addEventListener('click', () => alert('Bet'));
+  document.getElementById('p-raise').addEventListener('click', () => alert('Raise'));
 
-  // Admin (только для тебя)
+  // Admin
+  if (tg.initDataUnsafe?.user?.id == MY_ADMIN_ID) {
+    document.getElementById('admin-tab').style.display = 'block';
+    loadPlayers();
+  }
+
+  function loadPlayers() {
+    db.ref('users').once('value').then(snap => {
+      const list = document.getElementById('player-list');
+      list.innerHTML = '<h3>Игроки</h3>';
+      snap.forEach(child => {
+        const div = document.createElement('div');
+        div.className = 'player-item';
+        div.innerHTML = `ID ${child.key}: ${child.val().balance || 0} чипов`;
+        list.appendChild(div);
+      });
+    });
+  }
+
   document.getElementById('admin-change').addEventListener('click', () => {
+    const uid = document.getElementById('admin-user').value.trim();
     const sum = parseInt(document.getElementById('admin-sum').value);
-    if (!isNaN(sum)) {
-      updateChips(sum);
-      document.getElementById('admin-status').textContent = `Чипы изменены на ${sum > 0 ? '+' : ''}${sum}`;
+    if (uid && !isNaN(sum)) {
+      db.ref(`users/${uid}/balance`).transaction(current => (current || 0) + sum);
+      document.getElementById('admin-status').textContent = `Баланс ${uid} изменён на ${sum}`;
+      loadPlayers();
     } else {
-      alert('Введите число');
+      alert('Введите ID и сумму');
     }
   });
 
-  console.log("Кнопки привязаны. Открой консоль и попробуй нажать любую кнопку.");
+  console.log("Mini App загружен. Кнопки привязаны.");
 </script>
 </body>
 </html>
