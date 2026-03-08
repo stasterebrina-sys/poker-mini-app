@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"/>
   <title>Card Games</title>
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
   <style>
     :root {
       --bg: #000;
@@ -15,9 +17,6 @@
       --green: #388e3c;
       --blue: #1976d2;
       --gold: #ffcc00;
-      --win: #4caf50;    /* зелёный для победы */
-      --lose: #f44336;   /* красный для проигрыша */
-      --tie: #757575;    /* серый для ничьей */
     }
     body {
       margin: 0;
@@ -114,11 +113,7 @@
       font-size: 1.1rem;
       margin: 16px 0;
       min-height: 24px;
-      color: var(--text); /* стандартный белый цвет */
     }
-    .win { color: var(--win); font-weight: bold; }
-    .lose { color: var(--lose); font-weight: bold; }
-    .tie { color: var(--tie); font-weight: bold; }
   </style>
 </head>
 <body>
@@ -168,70 +163,36 @@
   console.log("Mini App загружен");
   console.log("Твой Telegram ID:", tg.initDataUnsafe?.user?.id);
 
-  // Чипы (localStorage + Firebase lazy)
-  let chips = parseInt(localStorage.getItem('chips') || '1000');
-  function updateChips(delta = 0) {
-    chips += delta;
-    localStorage.setItem('chips', chips);
-    document.getElementById('chips').textContent = `Чипы: ${chips}`;
-    if (window.db) {
-      db.ref(`users/${userId}/balance`).set(chips);
-    }
-  }
-  updateChips();
+  // Firebase config (твой)
+  const firebaseConfig = {
+    apiKey: "AIzaSyDaFDepdyQdw23ieJilXEfO_oVN0rIhHg",
+    authDomain: "tggame-56b27.firebaseapp.com",
+    databaseURL: "https://tggame-56b27-default-rtdb.firebaseio.com",
+    projectId: "tggame-56b27",
+    storageBucket: "tggame-56b27.appspot.com",
+    messagingSenderId: "937043251707",
+    appId: "1:937043251707:web:aad7b1b9408b6d07d5bb5e",
+    measurementId: "G-Q15Q0MS2L4"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  const db = firebase.database();
 
   const userId = tg.initDataUnsafe?.user?.id || 'guest';
 
-  // Lazy load Firebase
-  let db = null;
-  function loadFirebase() {
-    if (db) return;
+  // Чипы
+  let chips = 1000;
+  db.ref(`users/${userId}/balance`).on('value', snap => {
+    chips = snap.val() || 1000;
+    document.getElementById('chips').textContent = `Чипы: ${chips}`;
+  });
 
-    console.log("Загружаем Firebase...");
-
-    const scriptApp = document.createElement('script');
-    scriptApp.src = "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    document.head.appendChild(scriptApp);
-
-    const scriptDB = document.createElement('script');
-    scriptDB.src = "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-    scriptDB.onload = () => {
-      const firebaseConfig = {
-        apiKey: "AIzaSyDaFDepdyQdw23ieJilXEfO_oVN0rIhHg",
-        authDomain: "tggame-56b27.firebaseapp.com",
-        databaseURL: "https://tggame-56b27-default-rtdb.firebaseio.com",
-        projectId: "tggame-56b27",
-        storageBucket: "tggame-56b27.appspot.com",
-        messagingSenderId: "937043251707",
-        appId: "1:937043251707:web:aad7b1b9408b6d07d5bb5e",
-        measurementId: "G-Q15Q0MS2L4"
-      };
-
-      firebase.initializeApp(firebaseConfig);
-      db = firebase.database();
-
-      console.log("Firebase загружен");
-
-      // Синхронизация чипов
-      db.ref(`users/${userId}/balance`).on('value', snap => {
-        chips = snap.val() || chips;
-        document.getElementById('chips').textContent = `Чипы: ${chips}`;
-        localStorage.setItem('chips', chips);
-      });
-
-      // lastActive
-      function updateLastActive() {
-        db.ref(`users/${userId}/lastActive`).set(Date.now());
-      }
-      setInterval(updateLastActive, 30000);
-      updateLastActive();
-    };
-    scriptDB.onerror = () => console.error("Ошибка загрузки Firebase");
-    document.head.appendChild(scriptDB);
+  // Обновляем lastActive
+  function updateLastActive() {
+    db.ref(`users/${userId}/lastActive`).set(Date.now());
   }
-
-  // Запускаем lazy load через 5 секунд
-  setTimeout(loadFirebase, 5000);
+  setInterval(updateLastActive, 30000);
+  updateLastActive();
 
   // Навигация
   document.querySelectorAll('nav button').forEach(btn => {
@@ -295,19 +256,16 @@
     document.getElementById('bj-bet-area').style.display = 'none';
     document.getElementById('bj-actions').style.display = 'flex';
     document.getElementById('bj-msg').textContent = 'Твой ход';
-    document.getElementById('bj-msg').className = 'msg'; // стандартный белый
   });
 
   document.getElementById('bj-hit').addEventListener('click', () => {
     bjPlayer.push(bjDeck.pop());
     document.getElementById('bj-player').innerHTML = bjPlayer.map(c => `<div class="card ${c.s==='♥'||c.s==='♦'?'red':''}">${c.r}${c.s}</div>`).join('');
     if (bjValue(bjPlayer) > 21) {
-      document.getElementById('bj-msg').className = 'msg lose';
       document.getElementById('bj-msg').textContent = 'Перебор! Проигрыш';
       document.getElementById('bj-actions').style.display = 'none';
       document.getElementById('bj-new').style.display = 'block';
     } else {
-      document.getElementById('bj-msg').className = 'msg'; // стандартный белый
       document.getElementById('bj-msg').textContent = 'Ты взял карту';
     }
   });
@@ -323,35 +281,18 @@
 
     const pv = bjValue(bjPlayer);
     let msg = '';
-    let className = 'msg';
-    if (pv > 21) {
-      msg = 'Перебор! Проигрыш';
-      className = 'msg lose';
-    } else if (dv > 21) {
-      msg = 'Дилер перебрал! Выигрыш';
-      className = 'msg win';
-      updateChips(bjBet * 2);
-    } else if (pv > dv) {
-      msg = 'Выигрыш!';
-      className = 'msg win';
-      updateChips(bjBet * 2);
-    } else if (pv < dv) {
-      msg = 'Проигрыш';
-      className = 'msg lose';
-    } else {
-      msg = 'Ничья';
-      className = 'msg tie';
-      updateChips(bjBet);
-    }
+    if (pv > 21) msg = 'Перебор! Проигрыш';
+    else if (dv > 21) { msg = 'Дилер перебрал! Выигрыш'; updateChips(bjBet * 2); }
+    else if (pv > dv) { msg = 'Выигрыш!'; updateChips(bjBet * 2); }
+    else if (pv < dv) msg = 'Проигрыш';
+    else { msg = 'Ничья'; updateChips(bjBet); }
 
-    document.getElementById('bj-msg').className = className;
     document.getElementById('bj-msg').textContent = msg;
     document.getElementById('bj-actions').style.display = 'none';
     document.getElementById('bj-new').style.display = 'block';
   });
 
   document.getElementById('bj-new').addEventListener('click', () => {
-    document.getElementById('bj-msg').className = 'msg';
     document.getElementById('bj-msg').textContent = '';
     document.getElementById('bj-new').style.display = 'none';
     document.getElementById('bj-bet-area').style.display = 'block';
@@ -368,55 +309,6 @@
     while (v > 21 && aces--) v -= 10;
     return v;
   }
-// Lazy load Firebase
-let db = null;
-function loadFirebase() {
-  if (db) return;
-
-  console.log("Загружаем Firebase...");
-
-  const scriptApp = document.createElement('script');
-  scriptApp.src = "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-  document.head.appendChild(scriptApp);
-
-  const scriptDB = document.createElement('script');
-  scriptDB.src = "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
-  scriptDB.onload = () => {
-    const firebaseConfig = {
-      apiKey: "AIzaSyDaFDepdyQdw23ieJilXEfO_oVN0rIhHg",
-      authDomain: "tggame-56b27.firebaseapp.com",
-      databaseURL: "https://tggame-56b27-default-rtdb.firebaseio.com",
-      projectId: "tggame-56b27",
-      storageBucket: "tggame-56b27.appspot.com",
-      messagingSenderId: "937043251707",
-      appId: "1:937043251707:web:aad7b1b9408b6d07d5bb5e",
-      measurementId: "G-Q15Q0MS2L4"
-    };
-
-    firebase.initializeApp(firebaseConfig);
-    db = firebase.database();
-
-    console.log("Firebase загружен");
-
-    // Синхронизация чипов
-    db.ref(`users/${userId}/balance`).on('value', snap => {
-      chips = snap.val() || chips;
-      document.getElementById('chips').textContent = `Чипы: ${chips}`;
-      localStorage.setItem('chips', chips);
-    });
-
-    // lastActive
-    function updateLastActive() {
-      db.ref(`users/${userId}/lastActive`).set(Date.now());
-    }
-    setInterval(updateLastActive, 30000);
-    updateLastActive();
-  };
-  document.head.appendChild(scriptDB);
-}
-
-// Запускаем lazy load
-setTimeout(loadFirebase, 5000);
 
   console.log("Mini App полностью загружен. Кнопки привязаны.");
 </script>
